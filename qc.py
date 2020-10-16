@@ -35,29 +35,15 @@ print(labels)
 print(questions)
 
 #preprocess text
-
-#lowercase
-for index, question in enumerate(questions):
-    questions[index] = question.lower()
-print(questions)
-
-
-#remove numbers
 import re
-for index, question in enumerate(questions):
-    questions[index] = re.sub(r'\d+', '', question)
-print(questions)
-
-#remove punctuation
 import string
 translator = str.maketrans('', '', string.punctuation)
-for index, question in enumerate(questions):
-    questions[index] = question.translate(translator)
-print(questions)
 
-#remove whitespaces
 for index, question in enumerate(questions):
-    questions[index] = question.strip()
+    questions[index] = question.lower() #lowercase
+    questions[index] = re.sub(r'\d+', '', questions[index])  #remove numbers
+    questions[index] = questions[index].translate(translator)
+    questions[index] = questions[index].strip()
 print(questions)
 
 
