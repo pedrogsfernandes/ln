@@ -49,12 +49,20 @@ print("questions:", len(questions))
 #preprocess text
 import re
 import string
+from nltk.stem import WordNetLemmatizer 
+
+lemmatizer=WordNetLemmatizer()
 translator = str.maketrans('', '', string.punctuation)
 
 for index, question in enumerate(questions):
     questions[index] = question.lower() #lowercase
     questions[index] = re.sub(r'\d+', '', questions[index])  #remove numbers
     questions[index] = questions[index].translate(translator)
+    finalstr = ""
+    splitted = questions[index].split(' ')
+    for word in splitted:
+        finalstr = finalstr + " " +lemmatizer.lemmatize(word)
+    questions[index] = finalstr
     questions[index] = questions[index].strip()
 print("questions:", len(questions))
 
@@ -62,6 +70,11 @@ for index, question in enumerate(devQuestions):
     devQuestions[index] = question.lower() #lowercase
     devQuestions[index] = re.sub(r'\d+', '', devQuestions[index])  #remove numbers
     devQuestions[index] = devQuestions[index].translate(translator)
+    finalstr = ""
+    splitted = devQuestions[index].split(' ')
+    for word in splitted:
+        finalstr = finalstr + " " +lemmatizer.lemmatize(word)
+    devQuestions[index] = finalstr
     devQuestions[index] = devQuestions[index].strip()
 print("devQuestions:",len(devQuestions))
 
@@ -73,7 +86,7 @@ print("devQuestions:",len(devQuestions))
 
 #tdidf
 from sklearn.feature_extraction.text import TfidfVectorizer
-tfidfconverter = TfidfVectorizer(max_features=1500, min_df=5, max_df=0.7)
+tfidfconverter = TfidfVectorizer(max_features=1500, min_df=5, max_df=0.5)
 
 
 X_train = tfidfconverter.fit_transform(questions).toarray()
