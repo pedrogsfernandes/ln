@@ -2,7 +2,8 @@
 #X-TEST  - DEV-questions.txt 
 #y-TRAIN - TRAIN.txt labels
 #y-TEST - DEV-labels.txt 
-
+from nltk.stem import PorterStemmer
+from nltk.stem import LancasterStemmer
 
 
 # import warnings filter
@@ -53,6 +54,7 @@ from nltk.stem import WordNetLemmatizer
 
 lemmatizer=WordNetLemmatizer()
 translator = str.maketrans('', '', string.punctuation)
+porter = PorterStemmer()
 
 for index, question in enumerate(questions):
     questions[index] = question.lower() #lowercase
@@ -61,7 +63,7 @@ for index, question in enumerate(questions):
     finalstr = ""
     splitted = questions[index].split(' ')
     for word in splitted:
-        finalstr = finalstr + " " +lemmatizer.lemmatize(word)
+        finalstr = finalstr + " " +porter.stem(lemmatizer.lemmatize(word))
     questions[index] = finalstr
     questions[index] = questions[index].strip()
 print("questions:", len(questions))
@@ -73,7 +75,7 @@ for index, question in enumerate(devQuestions):
     finalstr = ""
     splitted = devQuestions[index].split(' ')
     for word in splitted:
-        finalstr = finalstr + " " +lemmatizer.lemmatize(word)
+        finalstr = finalstr + " " +porter.stem(lemmatizer.lemmatize(word))
     devQuestions[index] = finalstr
     devQuestions[index] = devQuestions[index].strip()
 print("devQuestions:",len(devQuestions))
