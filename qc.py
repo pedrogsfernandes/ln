@@ -11,17 +11,31 @@ from warnings import simplefilter
 # ignore all future warnings
 simplefilter(action='ignore', category=FutureWarning)
 
+import sys
+
+#print ('Number of arguments:', len(sys.argv), 'arguments.')
+#print ('Argument List:', str(sys.argv))
+
 #open files
-fTrain=open("training/TRAIN.txt", "r")
-fQuestions=open("training/DEV-questions.txt", "r") #test file
+fStop = open("stopwords.txt","r") #custom stopwords
+fTrain=open(sys.argv[2], "r")
+fQuestions=open(sys.argv[3], "r") #test file
 fLabels=open("training/DEV-labels.txt", "r") #test file
+
+stopwords = []
+for word in fStop.readlines():
+    stopwords.append(word.replace("\n",""))
+#print(stopwords)
 
 #separating questions in test set
 testLines = fQuestions.readlines()
 devQuestions = []
 for l in testLines:
+    for word in stopwords:
+        l = l.replace(" "+ word + " ", " ")
+        l = l.replace("What's","what is")
     devQuestions.append(l)
-
+#print(devQuestions)
 testLines = fLabels.readlines()
 devLabels = []
 for l in testLines:
@@ -35,8 +49,10 @@ questions = []
 for l in lines:
     lSplit = l.split(' ',1)
     labels.append(lSplit[0])
+    for word in stopwords:
+        lSplit[1] = lSplit[1].replace(" "+ word + " ", " ")
+        lSplit[1] = lSplit[1].replace("What's","what is")
     questions.append(lSplit[1])
-
 fTrain.close()
 fQuestions.close()
 fLabels.close()
@@ -44,8 +60,8 @@ fLabels.close()
 import numpy 
 questions = numpy.array(questions)
 devQuestions = numpy.array(devQuestions)
-print("labels:", len(labels))
-print("questions:", len(questions))
+#print("labels:", len(labels))
+#print("questions:", len(questions))
 
 #preprocess text
 import re
@@ -66,7 +82,7 @@ for index, question in enumerate(questions):
         finalstr = finalstr + " " +porter.stem(lemmatizer.lemmatize(word))
     questions[index] = finalstr
     questions[index] = questions[index].strip()
-print("questions:", len(questions))
+#print("questions:", len(questions))
 
 for index, question in enumerate(devQuestions):
     devQuestions[index] = question.lower() #lowercase
@@ -78,17 +94,15 @@ for index, question in enumerate(devQuestions):
         finalstr = finalstr + " " +porter.stem(lemmatizer.lemmatize(word))
     devQuestions[index] = finalstr
     devQuestions[index] = devQuestions[index].strip()
-print("devQuestions:",len(devQuestions))
+#print("devQuestions:",len(devQuestions))
 
 
-#stemming TODO
-
-#lemmatization TODO
-
+#print(questions)
+#print(devQuestions)
 
 #tdidf
 from sklearn.feature_extraction.text import TfidfVectorizer
-tfidfconverter = TfidfVectorizer(max_features=1500, min_df=5, max_df=0.5)
+tfidfconverter = TfidfVectorizer(max_features=1000, min_df=5, max_df=0.4)
 
 
 X_train = tfidfconverter.fit_transform(questions).toarray()
@@ -98,24 +112,26 @@ y_test = devLabels
 y_train = labels
 
 
-#training
-#from sklearn.model_selection import train_test_split
-#X_train, X_test, y_train, y_test = train_test_split(train, labels, test_size=0.2, random_state=0)
-
+#classifier
 from sklearn.ensemble import RandomForestClassifier
-classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
+classifier = RandomForestClassifier(n_estimators=800, random_state=0)
 classifier.fit(X_train, y_train) 
 
-
+# Classifier - Algorithm - SVM
+# fit the training dataset on the classifier
+#from sklearn import svm
+#classifier = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
+#classifier.fit(X_train,y_train)
 
 #testing
 y_pred = classifier.predict(X_test)
-print("y_pred: ",y_pred)
-print("y_train: ",y_train)
+for elem in y_pred:
+    print(elem)
+#print("y_train: ",y_train)
 
 #evaluating
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-print("y_test: ",y_test)
-print(confusion_matrix(y_test,y_pred))
-print(classification_report(y_test,y_pred))
-print(accuracy_score(y_test, y_pred))
+from sklearn.metrics import accuracy_score
+#print("y_test: ",y_test)
+#print(confusion_matrix(y_test,y_pred))
+#print(classification_report(y_test,y_pred))
+#print(accuracy_score(y_test, y_pred))
